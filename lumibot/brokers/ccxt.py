@@ -29,6 +29,8 @@ class Ccxt(Broker):
             raise ValueError(f"Ccxt Broker's Data Source must be of type {CcxtData}")
         self.api = self.data_source.api
 
+        self.asset_symbols = ["BTC"]
+
     # =========Clock functions=====================
 
     def get_timestamp(self):
@@ -113,6 +115,9 @@ class Ccxt(Broker):
         no_valuation = []
         for currency_info in balances_info:
             currency = currency_info[currency_key]
+
+            if currency not in self.asset_symbols and currency != quote_asset.symbol:
+                continue
 
             if currency == quote_asset.symbol:
                 total_cash_value = Decimal(currency_info["balance"])
@@ -251,11 +256,12 @@ class Ccxt(Broker):
         list of position objects"""
         result = []
         for broker_position in broker_positions:
-            new_pos = self._parse_broker_position(broker_position, strategy)
+            if broker_position["currency"] in self.asset_symbols:
+                new_pos = self._parse_broker_position(broker_position, strategy)
 
-            # Check if the position is not None
-            if new_pos is not None:
-                result.append(new_pos)
+                # Check if the position is not None
+                if new_pos is not None:
+                    result.append(new_pos)
 
         return result
 
