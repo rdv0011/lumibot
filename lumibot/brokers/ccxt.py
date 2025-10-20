@@ -426,7 +426,21 @@ class Ccxt(Broker):
         limits = market["limits"]
         precision = market["precision"]
         if self.api.exchangeId in ["binance", "kucoin"]:
-            precision_amount = Decimal(str(10 ** -precision["amount"]))
+            precision_amount_value = precision.get("amount")
+
+            # Detect if precision is incorrectly represented as a float like 1e-05
+            if isinstance(precision_amount_value, (float, Decimal)) and precision_amount_value < 1:
+                # Convert to number of decimal digits
+                try:
+                    precision_digits = abs(int(round(-math.log10(float(precision_amount_value)))))
+                except Exception:
+                    precision_digits = 8  # fallback
+            else:
+                # Already an integer precision (e.g. 5)
+                precision_digits = int(precision_amount_value)
+
+            # Compute correct step size
+            precision_amount = Decimal(str(10 ** -precision_digits))
         elif self.api.exchangeId == "kraken":
             initial_precision_amount = Decimal(str(precision["amount"]))
 
