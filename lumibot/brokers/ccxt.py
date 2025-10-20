@@ -3,6 +3,7 @@ import logging
 import os
 from decimal import ROUND_DOWN, Decimal, getcontext
 from typing import Union
+import math
 
 from lumibot.data_sources import CcxtData
 from lumibot.entities import Asset, Order, Position
